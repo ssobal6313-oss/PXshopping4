@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#d4622a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="함께 장보기">
+<title>함께 장보기 — 우리들의 쇼핑 리스트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fdf6ec;
+    --bg-card: #fffaf0;
+    --ink: #2c2416;
+    --ink-soft: #6b5d4a;
+    --accent: #d4622a;
+    --accent-soft: #f4a06a;
+    --leaf: #6b8e4e;
+    --berry: #b94a5e;
+    --sky: #6a8caf;
+    --line: #d9c9a8;
+    --highlight: #fff3b8;
+    --shadow: 0 2px 0 #d9c9a8, 0 6px 20px rgba(60, 40, 20, 0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Gowun Batang', serif;
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(244, 160, 106, 0.08) 0, transparent 40%),
+      radial-gradient(circle at 80% 90%, rgba(107, 142, 78, 0.07) 0, transparent 40%);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 32px 16px 80px;
+    line-height: 1.6;
+  }
+
+  .container {
+    max-width: 920px;
+    margin: 0 auto;
+  }
+
+  /* ===== Header ===== */
+  header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 24px 0;
+    border-bottom: 2px dashed var(--line);
+  }
+
+  header h1 {
+    font-family: 'Gaegu', cursive;
+    font-size: 44px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  header h1 .emoji { display: inline-block; transform: rotate(-8deg); }
+
+  header p {
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+
+  /* ===== Step Tabs ===== */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 32px;
+    background: var(--bg-card);
+    padding: 8px;
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .step-btn {
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px 8px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+  }
+
+  .step-btn:hover { background: rgba(212, 98, 42, 0.08); color: var(--ink); }
+
+  .step-btn.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(212, 98, 42, 0.3);
+    transform: translateY(-1px);
+  }
+
+  .step-btn .num {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    background: var(--bg);
+    color: var(--accent);
+    border-radius: 50%;
+    margin-right: 6px;
+    font-size: 14px;
+  }
+
+  .step-btn.active .num { background: #fff; color: var(--accent); }
+
+  /* ===== Panels ===== */
+  .panel { display: none; animation: fadeIn 0.4s ease; }
+  .panel.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--line);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+
+  .card-title {
+    font-family: 'Gaegu', cursive;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+    margin-left: 8px;
+  }
+
+  /* ===== Forms ===== */
+  .form-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  input[type="text"], input[type="number"], select {
+    font-family: 'Gowun Batang', serif;
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    transition: border-color 0.2s;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(212, 98, 42, 0.1);
+  }
+
+  input[type="number"] { flex: 0 0 80px; }
+
+  .btn {
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+    font-size: 16px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: #b8541f; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-soft {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+  }
+  .btn-soft:hover { background: var(--accent); color: #fff; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1.5px solid var(--line);
+  }
+  .btn-ghost:hover { background: var(--bg); color: var(--ink); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--berry);
+    border: 1.5px solid var(--berry);
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+  .btn-danger:hover { background: var(--berry); color: #fff; }
+
+  .btn-tiny {
+    font-size: 13px;
+    padding: 4px 10px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'Gaegu', cursive;
+    transition: all 0.2s;
+  }
+  .btn-tiny:hover { background: var(--ink-soft); color: #fff; }
+
+  .btn-tiny.btn-save {
+    background: var(--leaf);
+    color: #fff;
+    border-color: var(--leaf);
+    font-weight: 700;
+  }
+  .btn-tiny.btn-save:hover {
+    background: #5a7a40;
+    border-color: #5a7a40;
+  }
+
+  /* ===== People ===== */
+  .people-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .person-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px 6px 14px;
+    background: var(--highlight);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  .person-chip .x {
+    cursor: pointer;
+    color: var(--ink-soft);
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+    border-radius: 50%;
+    transition: all 0.2s;
+  }
+  .person-chip .x:hover { background: var(--berry); color: #fff; }
+
+  /* ===== Categories ===== */
+  .category-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+
+  .cat-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--bg);
+    border: 1.5px solid var(--line);
+    border-radius: 999px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+  }
+  .cat-tag .x {
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+  }
+  .cat-tag .x:hover { color: var(--berry); }
+
+  /* ===== Wish Items ===== */
+  .person-block {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1.5px dashed var(--line);
+    border-radius: 12px;
+  }
+
+  .person-block-title {
+    font-family: 'Gaegu', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--leaf);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .person-block-title::before { content: '✿'; color: var(--accent-soft); }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 1.5fr 2fr 70px auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+    padding: 8px;
+    background: var(--bg);
+    border-radius: 8px;
+  }
+
+  .item-row select, .item-row input { padding: 8px 10px; font-size: 14px; }
+
+  .empty-msg {
+    color: var(--ink-soft);
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  /* ===== Step 2: Purchase Check ===== */
+  .check-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px dashed var(--line);
+    transition: background 0.2s;
+  }
+
+  .check-row:last-child { border-bottom: none; }
+  .check-row:hover { background: var(--bg); }
+
+  .check-row.bought { background: rgba(107, 142, 78, 0.08); }
+  .check-row.bought .item-name { text-decoration: line-through; color: var(--ink-soft); }
+
+  .custom-check {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 2px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .custom-check.checked {
+    background: var(--leaf);
+    border-color: var(--leaf);
+  }
+
+  .custom-check.checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  .item-info { display: flex; flex-direction: column; gap: 2px; }
+  .item-name { font-weight: 700; font-size: 15px; }
+  .item-meta { font-size: 13px; color: var(--ink-soft); }
+
+  .shared-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    background: var(--sky);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 11px;
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+
+  .prev-price-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    background: var(--leaf);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 11px;
+    font-family: 'Gaegu', cursive;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+
+  .price-input {
+    width: 110px;
+    padding: 8px 10px;
+    font-size: 14px;
+    text-align: right;
+  }
+
+  .price-input:disabled { background: #f0e8d8; color: var(--ink-soft); }
+
+  /* ===== Settlement ===== */
+  .settlement-card {
+    background: linear-gradient(135deg, #fff 0%, var(--highlight) 100%);
+    border: 2px solid var(--accent-soft);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+
+  .settlement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px dashed var(--line);
+  }
+
+  .settlement-name {
+    font-family: 'Gaegu', cursive;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .settlement-total {
+    font-family: 'Gaegu', cursive;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .settlement-list { list-style: none; }
+
+  .settlement-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .settlement-list li .qty { color: var(--ink-soft); margin-left: 4px; }
+  .settlement-list li .price { font-weight: 700; }
+
+  .grand-total {
+    text-align: center;
+    padding: 24px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 16px;
+    margin-top: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .grand-total .label {
+    font-family: 'Gaegu', cursive;
+    font-size: 18px;
+    opacity: 0.9;
+  }
+
+  .grand-total .amount {
+    font-family: 'Gaegu', cursive;
+    font-size: 36px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-family: 'Gaegu', cursive;
+    font-size: 16px;
+    font-weight: 700;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s;
+    z-index: 1000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ===== Misc ===== */
+  .help-text {
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .top-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--ink-soft);
+  }
+
+  .empty-state .big-emoji {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: block;
+    opacity: 0.6;
+  }
+
+  /* Mobile */
+  @media (max-width: 600px) {
+    body { padding: 16px 12px 60px; }
+    header { margin-bottom: 24px; padding: 12px 0; }
+    header h1 { font-size: 32px; }
+    header p { font-size: 13px; }
+
+    .steps { margin-bottom: 20px; padding: 6px; gap: 4px; }
+    .step-btn { font-size: 14px; padding: 12px 2px; }
+    .step-btn .num { width: 20px; height: 20px; line-height: 20px; font-size: 12px; margin-right: 3px; }
+
+    .card { padding: 16px; margin-bottom: 16px; border-radius: 12px; }
+    .card-title { font-size: 20px; }
+
+    /* iOS 자동 줌 방지: input font-size를 16px 이상으로 */
+    input[type="text"], input[type="number"], select {
+      font-size: 16px;
+      padding: 12px 12px;
+    }
+    input[type="number"] { flex: 0 0 90px; }
+
+    .btn { font-size: 16px; padding: 12px 16px; }
+
+    /* 1단계 품목 행: 2x2 그리드로 */
+    .item-row {
+      grid-template-columns: 1fr 90px;
+      grid-template-areas:
+        "name name"
+        "cat qty"
+        "del del";
+      gap: 6px;
+      padding: 10px;
+    }
+    .item-row > select { grid-area: cat; }
+    .item-row > .item-name-input { grid-area: name; }
+    .item-row > input[type="number"] { grid-area: qty; }
+    .item-row > .btn-danger { grid-area: del; justify-self: end; }
+
+    /* 2단계 체크 행 */
+    .check-row {
+      grid-template-columns: auto 1fr;
+      grid-template-areas:
+        "check info"
+        "price price";
+      gap: 8px;
+      padding: 14px 10px;
+    }
+    .check-row > .custom-check { grid-area: check; }
+    .check-row > .item-info { grid-area: info; }
+    .check-row > .price-input {
+      grid-area: price;
+      width: 100%;
+      max-width: 180px;
+      justify-self: start;
+    }
+    .check-row > span:last-child { display: none; } /* '원' 라벨 숨김 (placeholder에 이미 있음) */
+
+    .custom-check { width: 32px; height: 32px; } /* 터치하기 좋게 키움 */
+
+    .settlement-card { padding: 16px; }
+    .settlement-name { font-size: 22px; }
+    .settlement-total { font-size: 22px; }
+    .grand-total { padding: 20px; }
+    .grand-total .amount { font-size: 30px; }
+
+    .top-actions .btn-tiny { font-size: 14px; padding: 8px 12px; }
+
+    .person-block { padding: 12px; }
+    .person-block-title { font-size: 18px; }
+
+    .shared-badge, .prev-price-badge {
+      display: block;
+      margin-left: 0;
+      margin-top: 4px;
+      width: fit-content;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1><span class="emoji">🛒</span> 함께 장보기</h1>
+  <p>희망 품목부터 정산까지, 다같이 장 볼 때 헷갈리지 않게</p>
+</header>
+
+<nav class="steps">
+  <button class="step-btn active" data-step="1"><span class="num">1</span>희망 품목</button>
+  <button class="step-btn" data-step="2"><span class="num">2</span>구매 확인</button>
+  <button class="step-btn" data-step="3"><span class="num">3</span>정산</button>
+</nav>
+
+<!-- ============ STEP 1 ============ -->
+<section class="panel active" id="panel-1">
+
+  <div class="top-actions">
+    <button class="btn-tiny btn-save" id="btn-save-prev">💾 현재 목록 저장</button>
+    <button class="btn-tiny" id="btn-load-prev">📂 이전 목록 불러오기</button>
+    <button class="btn-tiny" id="btn-clear-all">🗑️ 전체 초기화</button>
+  </div>
+  <p class="help-text" style="margin-bottom: 16px;">
+    💡 자주 사는 목록이라면 입력 후 <b>"현재 목록 저장"</b>을 눌러주세요. 다음에 <b>"이전 목록 불러오기"</b>로 가격까지 그대로 가져올 수 있어요.
+  </p>
+
+  <!-- 사람 추가 -->
+  <div class="card">
+    <div class="card-title">👥 함께 사는 사람</div>
+    <div class="form-row">
+      <input type="text" id="person-input" placeholder="이름을 적어주세요 (예: 민지)">
+      <button class="btn" id="add-person-btn">추가</button>
+    </div>
+    <div class="people-list" id="people-list"></div>
+  </div>
+
+  <!-- 카테고리 관리 -->
+  <div class="card">
+    <div class="card-title">🏷️ 품목 카테고리</div>
+    <div class="form-row">
+      <input type="text" id="cat-input" placeholder="새 카테고리 추가 (예: 문구)">
+      <button class="btn btn-soft" id="add-cat-btn">+ 추가</button>
+    </div>
+    <div class="category-row" id="cat-list"></div>
+  </div>
+
+  <!-- 품목 입력 -->
+  <div class="card">
+    <div class="card-title">📝 사고 싶은 물건</div>
+    <p class="help-text">사람별로 사고 싶은 물건을 적어주세요. 가격은 2단계에서 실제 산 가격으로 입력해요.</p>
+    <div id="wish-area"></div>
+  </div>
+
+</section>
+
+<!-- ============ STEP 2 ============ -->
+<section class="panel" id="panel-2">
+
+  <div class="card">
+    <div class="card-title">✅ 실제로 산 물건 체크</div>
+    <p class="help-text">대신 장보러 간 사람이 사 온 물건에 체크하고, 실제 가격을 적어주세요. (체크 안 하면 못 산 거)</p>
+    <div id="purchase-area"></div>
+  </div>
+
+</section>
+
+<!-- ============ STEP 3 ============ -->
+<section class="panel" id="panel-3">
+
+  <div class="card">
+    <div class="card-title">💰 정산 결과</div>
+    <p class="help-text">각자 자기가 산 물건만큼 부담합니다.</p>
+    <div id="settlement-area"></div>
+  </div>
+
+</section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==========================================================
+   함께 장보기 — 데이터 & 로직
+   ========================================================== */
+
+// ---------- 상태 ----------
+const STORAGE_KEY = 'shopping_together_v1';
+const PREV_KEY = 'shopping_together_prev_v1';
+const DEFAULT_CATS = ['잡화', '음식', '뷰티', '건강', '음료', '과자', '젤리'];
+
+let state = {
+  people: [],          // [{id, name}]
+  categories: [...DEFAULT_CATS],
+  items: []            // [{id, personId, category, name, qty, bought, price}]
+};
+
+// ---------- 저장 / 불러오기 ----------
+function save() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.error('저장 실패', e);
+  }
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const loaded = JSON.parse(raw);
+      state.people = loaded.people || [];
+      state.categories = loaded.categories && loaded.categories.length ? loaded.categories : [...DEFAULT_CATS];
+      state.items = loaded.items || [];
+    }
+  } catch (e) {
+    console.error('불러오기 실패', e);
+  }
+}
+
+function uid() { return Math.random().toString(36).slice(2, 10); }
+
+// ---------- 품목 정규화 ----------
+// 띄어쓰기, 대소문자, 앞뒤 공백 차이를 무시하고 같은 품목으로 인식
+function normalizeName(name) {
+  return String(name || '')
+    .replace(/\s+/g, '')   // 모든 공백 제거 (띄어쓰기 무시)
+    .toLowerCase()         // 대소문자 무시
+    .trim();
+}
+
+// 같은 품목 그룹의 대표 가격을 가져옴 (그룹 내 누구든 입력한 가격)
+function getGroupPrice(item) {
+  const key = normalizeName(item.name);
+  if (!key) return item.price || 0;
+  // 같은 정규화 이름을 가진 모든 품목 중에서 0보다 큰 가격을 찾음
+  const sameGroup = state.items.filter(i => normalizeName(i.name) === key);
+  const withPrice = sameGroup.find(i => (i.price || 0) > 0);
+  return withPrice ? withPrice.price : (item.price || 0);
+}
+
+// 같은 품목 그룹 전체에 가격 적용
+function setGroupPrice(item, newPrice) {
+  const key = normalizeName(item.name);
+  if (!key) {
+    item.price = newPrice;
+    return;
+  }
+  state.items.forEach(i => {
+    if (normalizeName(i.name) === key) {
+      i.price = newPrice;
+    }
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ---------- 단계 전환 ----------
+document.querySelectorAll('.step-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const step = btn.dataset.step;
+    document.querySelectorAll('.step-btn').forEach(b => b.classList.toggle('active', b === btn));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + step));
+    if (step === '2') renderPurchase();
+    if (step === '3') renderSettlement();
+  });
+});
+
+// ==========================================================
+// STEP 1
+// ==========================================================
+
+// ---- 사람 추가 ----
+function renderPeople() {
+  const list = document.getElementById('people-list');
+  list.innerHTML = '';
+  if (state.people.length === 0) {
+    list.innerHTML = '<span class="empty-msg">아직 등록된 사람이 없어요</span>';
+    return;
+  }
+  state.people.forEach(p => {
+    const chip = document.createElement('span');
+    chip.className = 'person-chip';
+    chip.innerHTML = `${escapeHtml(p.name)} <span class="x" title="삭제">×</span>`;
+    chip.querySelector('.x').addEventListener('click', () => removePerson(p.id));
+    list.appendChild(chip);
+  });
+}
+
+function addPerson() {
+  const input = document.getElementById('person-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (state.people.some(p => p.name === name)) {
+    showToast('이미 있는 이름이에요');
+    return;
+  }
+  state.people.push({ id: uid(), name });
+  input.value = '';
+  save();
+  renderPeople();
+  renderWishArea();
+}
+
+function removePerson(id) {
+  if (!confirm('이 사람과 관련된 품목도 모두 삭제됩니다. 계속할까요?')) return;
+  state.people = state.people.filter(p => p.id !== id);
+  state.items = state.items.filter(i => i.personId !== id);
+  save();
+  renderPeople();
+  renderWishArea();
+}
+
+document.getElementById('add-person-btn').addEventListener('click', addPerson);
+document.getElementById('person-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addPerson();
+});
+
+// ---- 카테고리 ----
+function renderCategories() {
+  const list = document.getElementById('cat-list');
+  list.innerHTML = '';
+  state.categories.forEach(c => {
+    const tag = document.createElement('span');
+    tag.className = 'cat-tag';
+    const isDefault = DEFAULT_CATS.includes(c);
+    tag.innerHTML = `${escapeHtml(c)}${isDefault ? '' : ' <span class="x" title="삭제">×</span>'}`;
+    if (!isDefault) {
+      tag.querySelector('.x').addEventListener('click', () => removeCategory(c));
+    }
+    list.appendChild(tag);
+  });
+}
+
+function addCategory() {
+  const input = document.getElementById('cat-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (state.categories.includes(name)) {
+    showToast('이미 있는 카테고리예요');
+    return;
+  }
+  state.categories.push(name);
+  input.value = '';
+  save();
+  renderCategories();
+  renderWishArea();
+}
+
+function removeCategory(name) {
+  // 그 카테고리를 쓰던 품목은 첫 번째 카테고리로 옮김
+  const fallback = state.categories.find(c => c !== name) || '잡화';
+  state.items.forEach(i => { if (i.category === name) i.category = fallback; });
+  state.categories = state.categories.filter(c => c !== name);
+  save();
+  renderCategories();
+  renderWishArea();
+}
+
+document.getElementById('add-cat-btn').addEventListener('click', addCategory);
+document.getElementById('cat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addCategory();
+});
+
+// ---- 희망 품목 ----
+function renderWishArea() {
+  const area = document.getElementById('wish-area');
+  area.innerHTML = '';
+
+  if (state.people.length === 0) {
+    area.innerHTML = `
+      <div class="empty-state">
+        <span class="big-emoji">👆</span>
+        먼저 위에서 사람을 추가해주세요
+      </div>`;
+    return;
+  }
+
+  state.people.forEach(person => {
+    const block = document.createElement('div');
+    block.className = 'person-block';
+    block.innerHTML = `
+      <div class="person-block-title">${escapeHtml(person.name)}의 리스트</div>
+      <div class="items-container" data-person="${person.id}"></div>
+      <button class="btn btn-soft" style="margin-top:10px" data-add="${person.id}">+ 품목 추가</button>
+    `;
+    area.appendChild(block);
+
+    const itemsContainer = block.querySelector('.items-container');
+    const personItems = state.items.filter(i => i.personId === person.id);
+    if (personItems.length === 0) {
+      itemsContainer.innerHTML = '<div class="empty-msg">아직 적은 게 없어요. 아래 버튼으로 추가해보세요!</div>';
+    } else {
+      personItems.forEach(item => itemsContainer.appendChild(buildItemRow(item)));
+    }
+
+    block.querySelector('[data-add]').addEventListener('click', () => {
+      const newItem = {
+        id: uid(),
+        personId: person.id,
+        category: state.categories[0] || '잡화',
+        name: '',
+        qty: 1,
+        bought: false,
+        price: 0
+      };
+      state.items.push(newItem);
+      save();
+      renderWishArea();
+      // 새로 추가된 행의 이름 칸에 포커스
+      setTimeout(() => {
+        const row = document.querySelector(`[data-item="${newItem.id}"]`);
+        if (row) row.querySelector('.item-name-input').focus();
+      }, 50);
+    });
+  });
+}
+
+function buildItemRow(item) {
+  const row = document.createElement('div');
+  row.className = 'item-row';
+  row.dataset.item = item.id;
+
+  const catSelect = document.createElement('select');
+  state.categories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    if (c === item.category) opt.selected = true;
+    catSelect.appendChild(opt);
+  });
+  catSelect.addEventListener('change', () => { item.category = catSelect.value; save(); });
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = '품목명 (예: 라면)';
+  nameInput.className = 'item-name-input';
+  nameInput.value = item.name;
+  nameInput.addEventListener('input', () => { item.name = nameInput.value; save(); });
+
+  const qtyInput = document.createElement('input');
+  qtyInput.type = 'number';
+  qtyInput.min = '1';
+  qtyInput.value = item.qty;
+  qtyInput.addEventListener('input', () => {
+    const v = parseInt(qtyInput.value) || 1;
+    item.qty = Math.max(1, v);
+    save();
+  });
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn-danger';
+  delBtn.textContent = '삭제';
+  delBtn.addEventListener('click', () => {
+    state.items = state.items.filter(i => i.id !== item.id);
+    save();
+    renderWishArea();
+  });
+
+  row.append(catSelect, nameInput, qtyInput, delBtn);
+  return row;
+}
+
+// ---- 이전 목록 불러오기 / 초기화 ----
+document.getElementById('btn-load-prev').addEventListener('click', () => {
+  const raw = localStorage.getItem(PREV_KEY);
+  if (!raw) {
+    showToast('이전에 저장된 목록이 없어요');
+    return;
+  }
+  if (!confirm('현재 목록을 이전 목록으로 덮어씁니다. 계속할까요?')) return;
+  try {
+    const prev = JSON.parse(raw);
+    state.people = prev.people || [];
+    state.categories = prev.categories && prev.categories.length ? prev.categories : [...DEFAULT_CATS];
+    // 이전 품목과 가격은 그대로 가져오되, 구매 체크만 모두 해제 (이번 쇼핑을 새로 시작)
+    state.items = (prev.items || []).map(i => ({
+      ...i,
+      id: uid(),
+      bought: false        // 구매 체크는 초기화
+      // price는 그대로 유지
+    }));
+    save();
+    renderAll();
+    showToast('이전 목록을 불러왔어요! (가격은 유지, 체크는 초기화)');
+  } catch (e) {
+    showToast('불러오기에 실패했어요');
+  }
+});
+
+// ---- 현재 목록 저장 (수동 백업) ----
+document.getElementById('btn-save-prev').addEventListener('click', () => {
+  if (state.people.length === 0 || state.items.length === 0) {
+    showToast('저장할 내용이 없어요. 먼저 사람과 품목을 입력해주세요');
+    return;
+  }
+  const validItems = state.items.filter(i => i.name.trim() !== '');
+  if (validItems.length === 0) {
+    showToast('품목명이 비어있어요. 품목명을 적어주세요');
+    return;
+  }
+  // 이전 목록을 현재 상태로 덮어씀
+  localStorage.setItem(PREV_KEY, JSON.stringify(state));
+  showToast('💾 저장 완료! 다음에 "이전 목록 불러오기"로 쓸 수 있어요');
+});
+
+document.getElementById('btn-clear-all').addEventListener('click', () => {
+  if (!confirm('정말 모두 지울까요? (저장해둔 "이전 목록"은 그대로 남아 있어요)')) return;
+  state = {
+    people: [],
+    categories: [...DEFAULT_CATS],
+    items: []
+  };
+  save();
+  renderAll();
+  showToast('초기화했어요');
+});
+
+// ==========================================================
+// STEP 2 — 구매 확인
+// ==========================================================
+function renderPurchase() {
+  const area = document.getElementById('purchase-area');
+  area.innerHTML = '';
+
+  const validItems = state.items.filter(i => i.name.trim() !== '');
+
+  if (validItems.length === 0) {
+    area.innerHTML = `
+      <div class="empty-state">
+        <span class="big-emoji">📋</span>
+        1단계에서 먼저 사고 싶은 물건을 적어주세요
+      </div>`;
+    return;
+  }
+
+  // 사람별로 그룹화
+  state.people.forEach(person => {
+    const personItems = validItems.filter(i => i.personId === person.id);
+    if (personItems.length === 0) return;
+
+    const block = document.createElement('div');
+    block.className = 'person-block';
+    block.innerHTML = `<div class="person-block-title">${escapeHtml(person.name)}의 리스트</div>`;
+
+    const list = document.createElement('div');
+    personItems.forEach(item => list.appendChild(buildCheckRow(item)));
+    block.appendChild(list);
+
+    area.appendChild(block);
+  });
+}
+
+function buildCheckRow(item) {
+  const row = document.createElement('div');
+  row.className = 'check-row' + (item.bought ? ' bought' : '');
+
+  const check = document.createElement('span');
+  check.className = 'custom-check' + (item.bought ? ' checked' : '');
+
+  // 같은 품목 그룹 정보
+  const groupKey = normalizeName(item.name);
+  const groupItems = state.items.filter(i => normalizeName(i.name) === groupKey && i.name.trim() !== '');
+  const isShared = groupItems.length > 1;
+  const groupPrice = getGroupPrice(item);
+
+  // 같은 품목을 함께 산 다른 사람들 (자기 자신 제외)
+  const otherBuyers = groupItems
+    .filter(i => i.id !== item.id)
+    .map(i => state.people.find(p => p.id === i.personId)?.name)
+    .filter(Boolean);
+
+  const info = document.createElement('div');
+  info.className = 'item-info';
+  let metaText = `${escapeHtml(item.category)} · ${item.qty}개`;
+  if (isShared) {
+    metaText += ` <span class="shared-badge">🔗 ${escapeHtml(otherBuyers.join(', '))}와(과) 같은 품목</span>`;
+  }
+  // 이전 쇼핑에서 가격이 남아있고 아직 아무도 체크 안 했으면 힌트 표시
+  if (groupPrice > 0 && !groupItems.some(i => i.bought)) {
+    metaText += ` <span class="prev-price-badge">📌 저번 가격: ${formatMoney(groupPrice)}원</span>`;
+  }
+  info.innerHTML = `
+    <div class="item-name">${escapeHtml(item.name)}</div>
+    <div class="item-meta">${metaText}</div>
+  `;
+
+  const priceInput = document.createElement('input');
+  priceInput.type = 'number';
+  priceInput.className = 'price-input';
+  priceInput.placeholder = '가격(원)';
+  priceInput.min = '0';
+  priceInput.value = groupPrice || '';
+  // 가격 입력은: 본인이 샀거나 OR 그룹 내 누군가가 샀으면 활성화
+  const anyoneInGroupBought = groupItems.some(i => i.bought);
+  priceInput.disabled = !anyoneInGroupBought;
+  priceInput.addEventListener('input', () => {
+    const newPrice = parseInt(priceInput.value) || 0;
+    setGroupPrice(item, newPrice);
+    save();
+    // 같은 그룹의 다른 행들도 업데이트되어야 하므로 다시 렌더
+    renderPurchase();
+    // 포커스 유지 + 커서 끝으로
+    setTimeout(() => {
+      const newRow = document.querySelector(`[data-check-item="${item.id}"]`);
+      if (newRow) {
+        const inp = newRow.querySelector('.price-input');
+        if (inp) {
+          inp.focus();
+          const v = inp.value;
+          inp.value = '';
+          inp.value = v;
+        }
+      }
+    }, 0);
+  });
+
+  row.dataset.checkItem = item.id;
+
+  const label = document.createElement('span');
+  label.style.fontSize = '13px';
+  label.style.color = 'var(--ink-soft)';
+  label.textContent = '원';
+
+  check.addEventListener('click', () => {
+    item.bought = !item.bought;
+    // 가격은 초기화하지 않음 (그룹 내 다른 사람이 샀을 수 있고,
+    // 본인만 다시 샀을 때 가격을 다시 입력할 필요 없음)
+    save();
+    renderPurchase();
+  });
+
+  row.append(check, info, priceInput, label);
+  return row;
+}
+
+// ==========================================================
+// STEP 3 — 정산
+// ==========================================================
+function renderSettlement() {
+  const area = document.getElementById('settlement-area');
+  area.innerHTML = '';
+
+  const boughtItems = state.items.filter(i => i.bought && i.name.trim() !== '');
+
+  if (boughtItems.length === 0) {
+    area.innerHTML = `
+      <div class="empty-state">
+        <span class="big-emoji">🧾</span>
+        아직 구매 체크된 물건이 없어요.<br>
+        2단계에서 산 물건을 체크해주세요.
+      </div>`;
+    return;
+  }
+
+  let grandTotal = 0;
+
+  state.people.forEach(person => {
+    const personItems = boughtItems.filter(i => i.personId === person.id);
+    if (personItems.length === 0) return;
+
+    const personTotal = personItems.reduce((sum, i) => sum + getGroupPrice(i) * i.qty, 0);
+    grandTotal += personTotal;
+
+    const card = document.createElement('div');
+    card.className = 'settlement-card';
+    card.innerHTML = `
+      <div class="settlement-header">
+        <span class="settlement-name">${escapeHtml(person.name)}</span>
+        <span class="settlement-total">${formatMoney(personTotal)}원</span>
+      </div>
+      <ul class="settlement-list">
+        ${personItems.map(i => `
+          <li>
+            <span>· ${escapeHtml(i.name)} <span class="qty">×${i.qty}</span></span>
+            <span class="price">${formatMoney(getGroupPrice(i) * i.qty)}원</span>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+    area.appendChild(card);
+  });
+
+  const total = document.createElement('div');
+  total.className = 'grand-total';
+  total.innerHTML = `
+    <div class="label">총 합계</div>
+    <div class="amount">${formatMoney(grandTotal)}원</div>
+  `;
+  area.appendChild(total);
+}
+
+// ==========================================================
+// 유틸
+// ==========================================================
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+
+function formatMoney(n) {
+  return Math.round(n).toLocaleString('ko-KR');
+}
+
+function renderAll() {
+  renderPeople();
+  renderCategories();
+  renderWishArea();
+}
+
+// ==========================================================
+// 시작
+// ==========================================================
+load();
+renderAll();
+
+</script>
+</body>
+</html>
